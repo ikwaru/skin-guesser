@@ -53,8 +53,8 @@ export default function ImageComponent() {
         setInputName("")
     }
 
-    function retry(change){
-        if(score > highest){
+    function retry(change) {
+        if (score > highest) {
             setHighest(score)
         }
         setReloadSkin(prevState => !prevState);
@@ -75,9 +75,9 @@ export default function ImageComponent() {
         } else {
             setGuessValue(false);
             setErrorNum(prevCount => prevCount + 1)
-            if(errorNum > 4){
+            if (errorNum > 4) {
                 setErrorNum(0)
-                if(score > highest){
+                if (score > highest) {
                     setHighest(score)
                 }
             }
@@ -96,18 +96,18 @@ export default function ImageComponent() {
         const halfLength = Math.ceil(skinName.length / 4);
 
         if (words.length >= 3) {
-            if(words[0] === "Prestige" && words.length === 3){
-                return `Prestige ${words[1].slice(0,3)}`;
-            } else if (words[0] === "Prestige" && words.length > 3){
+            if (words[0] === "Prestige" && words.length === 3) {
+                return `Prestige ${words[1].slice(0, 3)}`;
+            } else if (words[0] === "Prestige" && words.length > 3) {
                 return words.slice(0, 2).join(" ");
-            } else if(words[1] === champ.name.split("")[0]) {
+            } else if (words[1] === champ.name.split(" ")[0]) {
                 return skinName.slice(0, halfLength);
+            } else if (words[3] === champ.name.split(" ")[0]) {
+                return words.slice(0, 2).join(" ");
             } else {
                 return words[0]
             }
         } else if (words.length === 2) {
-            return "seguir"
-        } else {
             return skinName.slice(0, halfLength);
         }
     }
@@ -118,7 +118,11 @@ export default function ImageComponent() {
             <div className={"flex flex-row gap-3"}>
                 <h2>Highest Score: {highest}</h2><h2>Score: {score}</h2>
             </div>
-            <img src={skinUrl} alt={champ.name} className="mt-4 w-1/2 rounded-md"/>
+            <div className={"flex flex-col items-center mt-4 overflow-hidden rounded-md"}>
+                <img src={skinUrl} alt={champ.name} className=
+                    {errorNum === 0 && "mt-4 w-1/2 rounded-md grayscale blur-sm"}
+                />
+            </div>
             <div className={"mt-5"}>
                 <input type={"text"} placeholder={"e.g. Star Guardian Rell"} value={inputName}
                        onChange={(e) => setInputName(e.target.value)}
@@ -136,7 +140,9 @@ export default function ImageComponent() {
             {guessValue && <div className={"flex flex-col items-center"}>
                 <h1 className={"mt-5 mb-2 text-l font-bold text-blue-500"}>Well done!</h1>
                 <h2>{skinName}</h2>
-                <button className={"bg-white font-bold text-black mt-3 mb-3"} onClick={() => changeSkin(score)}>Next champion</button>
+                <button className={"bg-white font-bold text-black mt-3 mb-3"} onClick={() => changeSkin(score)}>Next
+                    champion
+                </button>
                 <hr className="w-full h-px my-3 bg-gray-200 border-0 dark:bg-white"/>
             </div>}
             {guessValue === false && <div className={"flex flex-col items-center"}>
@@ -144,12 +150,14 @@ export default function ImageComponent() {
                 {errorNum >= 3 && <div className={"flex flex-col items-center"}>
                     <h2 className={"mt-5 font-bold"}>Or not.</h2>
                     <h2>{skinName}</h2>
-                    <button className={"bg-white font-bold text-black mt-3 mb-3"} onClick={() => changeSkin(0)}>Start Over</button>
+                    <button className={"bg-white font-bold text-black mt-3 mb-3"} onClick={() => retry(0)}>Start Over
+                    </button>
                     <hr className="w-full h-px my-3 bg-gray-200 border-0 dark:bg-white"/>
                 </div>}
             </div>}
             {hintNumber === 1 && <h2 className={"mt-5"}><strong>Hint 1:</strong> {champ.name}</h2>}
-            {hintNumber === 2 && <h2 className={"mt-5"}><strong>Hint 2:</strong> {skinName.slice(0, 2)}... {champ.name}</h2>}
+            {hintNumber === 2 &&
+                <h2 className={"mt-5"}><strong>Hint 2:</strong> {skinName.slice(0, 2)}... {champ.name}</h2>}
             {hintNumber === 3 && <h2 className={"mt-5"}><strong>Hint 3:</strong> {skinHint()}... {champ.name}</h2>}
         </div>
 

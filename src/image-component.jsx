@@ -75,7 +75,7 @@ export default function ImageComponent() {
         } else {
             setGuessValue(false);
             setErrorNum(prevCount => prevCount + 1)
-            if (errorNum > 4) {
+            if (errorNum > 5) {
                 setErrorNum(0)
                 if (score > highest) {
                     setHighest(score)
@@ -97,18 +97,20 @@ export default function ImageComponent() {
 
         if (words.length >= 3) {
             if (words[0] === "Prestige" && words.length === 3) {
-                return `Prestige ${words[1].slice(0, 3)}`;
+                return `Prestige ${words[1].slice(0, 3)}... ${champ.name}`;
             } else if (words[0] === "Prestige" && words.length > 3) {
-                return words.slice(0, 2).join(" ");
+                return `${words.slice(0, 2).join(" ")}... ${champ.name}`;
             } else if (words[1] === champ.name.split(" ")[0]) {
-                return skinName.slice(0, halfLength);
+                return `${skinName.slice(0, halfLength)}... ${champ.name}`;
             } else if (words[3] === champ.name.split(" ")[0]) {
-                return words.slice(0, 2).join(" ");
+                return `${words.slice(0, 2).join(" ")}... ${champ.name}`;
             } else {
-                return words[0]
+                return `${words[0]}... ${champ.name}`
             }
         } else if (words.length === 2) {
-            return skinName.slice(0, halfLength);
+            return `${skinName.slice(0, halfLength)}... ${champ.name}`;
+        } else {
+            return `${skinName.slice(0, halfLength)}...`
         }
     }
 
@@ -118,15 +120,33 @@ export default function ImageComponent() {
             <div className={"flex flex-row gap-3"}>
                 <h2>Highest Score: {highest}</h2><h2>Score: {score}</h2>
             </div>
-            <div className={"flex flex-col items-center mt-4 overflow-hidden rounded-md"}>
-                <img src={skinUrl} alt={champ.name} className=
-                    {errorNum === 0 && "mt-4 w-1/2 rounded-md grayscale blur-sm"}
-                />
+            <div className="flex flex-col items-center mt-4">
+                <div className="relative w-1/2 overflow-hidden rounded-md">
+                    <img
+                        src={skinUrl}
+                        alt={champ.name}
+                        className={`
+                            ${errorNum === 0 ? "w-full scale-[3] object-cover object-center rotate-45" : ""}
+                            ${errorNum === 1 ? "w-full scale-[1.5] object-cover object-center rotate-12" : ""}
+                            ${errorNum === 2 ? "w-full scale-[1] object-cover object-center" : ""}
+                            ${errorNum === 3 ? "w-full scale-[1] object-cover object-center" : ""}
+                        `}
+                    />
+
+                    <div className={`
+                            ${errorNum === 0 ? "absolute inset-0 grayscale backdrop-blur-sm rounded-md border-[3px]" : ""}
+                            ${errorNum === 1 ? "absolute inset-0 grayscale-[0.5] backdrop-blur-sm rounded-md border-[3px]" : ""}
+                            ${errorNum === 2 ? "absolute inset-0 grayscale rounded-md border-[3px]" : ""}
+                            ${errorNum === 3 ? "absolute inset-0 rounded-md border-[3px]" : ""}
+                        `}>
+                    </div>
+                </div>
             </div>
-            <div className={"mt-5"}>
+
+            <div className={"mt-5 flex flex-col items-center"}>
                 <input type={"text"} placeholder={"e.g. Star Guardian Rell"} value={inputName}
                        onChange={(e) => setInputName(e.target.value)}
-                       className={"bg-white text-black rounded-md text-lg p-2 w-[610px]"}/>
+                       className={"bg-white text-black rounded-md text-lg p-2 w-[610px] max-w-[60%]"}/>
             </div>
             <div>
                 <button className={"mt-5 mr-2 border-2 border-white"} onClick={showHint}>Hint
@@ -155,10 +175,11 @@ export default function ImageComponent() {
                     <hr className="w-full h-px my-3 bg-gray-200 border-0 dark:bg-white"/>
                 </div>}
             </div>}
-            {hintNumber === 1 && <h2 className={"mt-5"}><strong>Hint 1:</strong> {champ.name}</h2>}
-            {hintNumber === 2 &&
-                <h2 className={"mt-5"}><strong>Hint 2:</strong> {skinName.slice(0, 2)}... {champ.name}</h2>}
-            {hintNumber === 3 && <h2 className={"mt-5"}><strong>Hint 3:</strong> {skinHint()}... {champ.name}</h2>}
+            {hintNumber === 1 && skinName.split(" ").length === 1 ? <h2 className={"mt-5"}><strong>Hint 1:</strong> ({champ.name}) </h2> : ""}
+            {hintNumber === 1 && skinName.split(" ").length !== 1 ? <h2 className={"mt-5"}><strong>Hint 1:</strong> {champ.name} </h2> : ""}
+            {hintNumber === 2 && skinName.split(" ").length === 1 ? <h2 className={"mt-5"}><strong>Hint 2:</strong> {skinName.slice(0, 2)}... ({champ.name})</h2> : ""}
+            {hintNumber === 2 && skinName.split(" ").length !== 1 ? <h2 className={"mt-5"}><strong>Hint 2:</strong> {skinName.slice(0, 2)}... {champ.name}</h2> : ""}
+            {hintNumber === 3 && <h2 className={"mt-5"}><strong>Hint 3:</strong> {skinHint()}</h2>}
         </div>
 
     )

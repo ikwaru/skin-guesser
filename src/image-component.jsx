@@ -157,6 +157,7 @@ export default function ImageComponent() {
                 <button className={"ml-2 pr-2 pl-2 pb-2 bg-white text-black"} onClick={() => retry(0)}><ReplayIcon/>
                 </button>
             </div>
+            <h2 className={"mt-5"}>Number of tries remaining: {3-errorNum}</h2>
             {guessValue && <div className={"flex flex-col items-center"}>
                 <h1 className={"mt-5 mb-2 text-l font-bold text-blue-500"}>Well done!</h1>
                 <h2>{skinName}</h2>

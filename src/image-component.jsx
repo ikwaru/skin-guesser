@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import ReplayIcon from '@mui/icons-material/Replay';
+import skinService from './services/skinService.js';
 
 export default function ImageComponent() {
 
@@ -13,14 +14,56 @@ export default function ImageComponent() {
     const [errorNum, setErrorNum] = useState(0);
     const [score, setScore] = useState(0);
     const [highest, setHighest] = useState(0);
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [suggestionsEnabled, setSuggestionsEnabled] = useState(false);
 
     useEffect(() => {
-        {
-            fetchSkin()
-        }
+        initializeSkins();
+        fetchSkin();
     }, [])
 
     if (!champ) return <p>Loading...</p>;
+
+    async function initializeSkins() {
+        try {
+            await skinService.fetchAllSkins();
+        } catch (error) {
+            console.error('Error initializing skins:', error);
+        }
+    }
+
+    function filterSuggestions(input) {
+        if (!input.trim() || !suggestionsEnabled) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+
+        const filtered = skinService.filterSuggestions(input, 10);
+        setSuggestions(filtered);
+        setShowSuggestions(true);
+    }
+
+    function handleInputChange(value) {
+        setInputName(value);
+        filterSuggestions(value);
+    }
+
+    function selectSuggestion(skinName) {
+        setInputName(skinName);
+        setShowSuggestions(false);
+        setSuggestions([]);
+    }
+
+    function toggleSuggestions() {
+        setSuggestionsEnabled(prev => !prev);
+        if (suggestionsEnabled) {
+            // If disabling, hide any current suggestions
+            setShowSuggestions(false);
+            setSuggestions([]);
+        }
+    }
 
     function fetchSkin() {
         fetch('https://ddragon.leagueoflegends.com/cdn/15.18.1/data/en_US/champion.json')
@@ -51,6 +94,8 @@ export default function ImageComponent() {
         setGuessValue("")
         setScore(change)
         setInputName("")
+        setShowSuggestions(false)
+        setSuggestions([])
     }
 
     function retry(change) {
@@ -66,6 +111,8 @@ export default function ImageComponent() {
         setGuessValue("")
         setScore(change)
         setInputName("")
+        setShowSuggestions(false)
+        setSuggestions([])
     }
 
     function guessChamp(e) {
@@ -143,13 +190,44 @@ export default function ImageComponent() {
                 </div>
             </div>
 
-            <div className={"mt-5 flex flex-col items-center"}>
-                <input type={"text"} placeholder={"e.g. Star Guardian Rell"} value={inputName}
-                       onChange={(e) => setInputName(e.target.value)}
-                       className={"bg-white text-black rounded-md text-lg p-2 w-[610px] max-w-[60%]"}/>
+            <div className={"mt-5 flex flex-col items-center relative"}>
+                <input 
+                    type={"text"} 
+                    placeholder={"e.g. Star Guardian Rell"} 
+                    value={inputName}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onFocus={() => suggestionsEnabled && filterSuggestions(inputName)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    className={"bg-white text-black rounded-md text-lg p-2 w-[610px] max-w-[60%]"}
+                />
+                {showSuggestions && suggestions.length > 0 && suggestionsEnabled && (
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-[610px] max-w-[60%] bg-white border border-gray-300 rounded-md shadow-lg z-10 max-h-32 sm:max-h-40 md:max-h-48 overflow-y-auto">
+                        {suggestions.map((skin, index) => (
+                            <div
+                                key={index}
+                                className="px-3 py-1.5 hover:bg-gray-100 cursor-pointer text-black border-b border-gray-200 last:border-b-0"
+                                onMouseDown={() => selectSuggestion(skin.name)}
+                            >
+                                <div className="font-medium text-sm">{skin.name}</div>
+                                <div className="text-xs text-gray-600">{skin.championName}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             <div>
                 <button className={"mt-5 mr-2 border-2 border-white"} onClick={showHint}>Hint
+                </button>
+                <button 
+                    className={`mt-5 mr-2 px-3 py-2 rounded border-2 font-medium ${
+                        suggestionsEnabled 
+                            ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' 
+                            : 'bg-red-500 text-white border-red-500 hover:bg-red-600'
+                    }`}
+                    onClick={toggleSuggestions}
+                    title={suggestionsEnabled ? "Disable suggestions" : "Enable suggestions"}
+                >
+                    {suggestionsEnabled ? "Suggestions ON" : "Suggestions OFF"}
                 </button>
                 <button className={"mt-5 bg-white text-black"} type={"submit"}
                         onClick={() => guessChamp(inputName)}>Submit
